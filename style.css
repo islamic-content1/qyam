@@ -46,6 +46,10 @@ html, body {
   font-family: var(--font);
   font-size: 16px;
   overflow-x: hidden;
+  /* منع التكبير بإصبعين والنقر المزدوج */
+  touch-action: pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 button, input, select { font-family: inherit; font-size: inherit; }
@@ -96,6 +100,7 @@ button, input, select { font-family: inherit; font-size: inherit; }
   padding: 0 10px;
   background: #fff;
   border-radius: 0;
+  font-size: 16px;
 }
 
 .login-box button {
@@ -222,6 +227,13 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .grid tbody tr:nth-child(even) td.c-juz,
 .grid tbody tr.is-done td.c-juz { background: #fff; color: var(--header-text); }
 
+/* الجزء المكتمل: لون ذهبي مميز */
+.grid tbody tr td.c-juz.juz-done {
+  background: #f7e3a1;
+  color: #5c4300;
+  font-weight: 700;
+}
+
 /* خط فاصل أغمق بين الأجزاء */
 .grid tbody tr.juz-end td,
 .grid tbody td.c-juz { border-bottom: 2px solid #9aa7bd; }
@@ -285,6 +297,7 @@ button, input, select { font-family: inherit; font-size: inherit; }
   gap: 2px;
   overflow-x: auto;
   overflow-y: hidden;
+  touch-action: pan-x;
   scrollbar-width: none;
   z-index: 10;
 }
