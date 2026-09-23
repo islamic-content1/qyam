@@ -1,14 +1,16 @@
-/* خط طفولي العربي: يُقرأ من ملف داخل مجلد fonts أو من الجهاز إن كان مثبتًا */
+/* خط طفولي العربي: يُقرأ من ملفات مجلد fonts */
 @font-face {
   font-family: "Tufuli Arabic";
-  src: local("Tufuli Arabic"),
-       local("Tufuli Arabic DEMO"),
-       local("TufuliArabicDEMO-Regular"),
-       url("fonts/TufuliArabic.woff2") format("woff2"),
-       url("fonts/TufuliArabic.woff") format("woff"),
-       url("fonts/TufuliArabic.otf") format("opentype"),
-       url("fonts/TufuliArabic.ttf") format("truetype");
-  font-weight: normal;
+  src: url("fonts/TufuliArabicDEMO-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Tufuli Arabic";
+  src: url("fonts/TufuliArabicDEMO-Bold.otf") format("opentype");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
