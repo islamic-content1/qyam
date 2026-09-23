@@ -149,7 +149,8 @@ const state = {
   currentGirl: null,   // الشيت المفتوح حاليًا
   unsubscribe: null,   // إلغاء الاستماع للشيت
   data: { done: {} },
-  rows: new Map()      // رقم الورد → عناصر الصف
+  rows: new Map(),     // رقم الورد → عناصر الصف
+  juzCells: []         // خلايا الجزء المدموجة مع أرقام أورادها
 };
 
 // ------------------------------------------------------------
@@ -287,6 +288,7 @@ function renderTable() {
   const editable = canEdit();
   el.gridBody.innerHTML = "";
   state.rows.clear();
+  state.juzCells = [];
 
   const frag = document.createDocumentFragment();
 
@@ -323,6 +325,9 @@ function renderTable() {
       tdJuz = document.createElement("td");
       tdJuz.className = "c-juz";
       tdJuz.rowSpan = span;
+      const nums = [];
+      for (let k = 0; k < span; k++) nums.push(WIRDS[i + k].num);
+      state.juzCells.push({ td: tdJuz, nums });
     }
 
     if (tdJuz) labels.forEach(line => {
@@ -376,6 +381,15 @@ function fillData() {
     setDateCell(row.tdDate, date);
     row.tr.classList.toggle("is-done", Boolean(date));
   });
+  updateJuzCells();
+}
+
+// تلوين خلية الجزء عند إنهاء كل أورادها
+function updateJuzCells() {
+  state.juzCells.forEach(({ td, nums }) => {
+    const complete = nums.every(n => Boolean(state.data.done[String(n)]));
+    td.classList.toggle("juz-done", complete);
+  });
 }
 
 // ------------------------------------------------------------
@@ -393,6 +407,7 @@ async function onToggleDone(num, checked) {
   else delete state.data.done[key];
   setDateCell(row.tdDate, date);
   row.tr.classList.toggle("is-done", checked);
+  updateJuzCells();
 
   const ref = doc(db, "sheets", state.myGirl);
   setStatus("جاري الحفظ...");
@@ -406,6 +421,7 @@ async function onToggleDone(num, checked) {
     row.box.checked = Boolean(prev);
     setDateCell(row.tdDate, prev);
     row.tr.classList.toggle("is-done", Boolean(prev));
+    updateJuzCells();
     setStatus("تعذر الحفظ");
   }
 }
@@ -421,3 +437,14 @@ function setStatus(text) {
     statusTimer = setTimeout(() => { el.saveStatus.textContent = ""; }, 2000);
   }
 }
+
+// ------------------------------------------------------------
+// منع التكبير (الزوم) على الجوال
+// ------------------------------------------------------------
+["gesturestart", "gesturechange", "gestureend"].forEach(type => {
+  document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+});
+
+document.addEventListener("touchmove", (e) => {
+  if (e.touches && e.touches.length > 1) e.preventDefault();
+}, { passive: false });
