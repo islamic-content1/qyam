@@ -290,7 +290,7 @@ function renderTable() {
 
   const frag = document.createDocumentFragment();
 
-  WIRDS.forEach(w => {
+  WIRDS.forEach((w, i) => {
     const tr = document.createElement("tr");
 
     // رقم الورد
@@ -303,10 +303,29 @@ function renderTable() {
     tdPages.className = "c-pages";
     tdPages.textContent = `${w.from}–${w.to}`;
 
-    // الجزء
-    const tdJuz = document.createElement("td");
-    tdJuz.className = "c-juz";
-    juzLabels(w.from, w.to).forEach(line => {
+    // الجزء: خلية مدموجة لكل الأوراد المتتالية التي لها نفس الجزء
+    const labels = juzLabels(w.from, w.to);
+    const key = labels.join("|");
+    const prevKey = i > 0 ? juzLabels(WIRDS[i - 1].from, WIRDS[i - 1].to).join("|") : null;
+    const nextKey = i < WIRDS.length - 1 ? juzLabels(WIRDS[i + 1].from, WIRDS[i + 1].to).join("|") : null;
+
+    // آخر ورد في الجزء: خط فاصل أغمق تحته
+    if (key !== nextKey) tr.classList.add("juz-end");
+
+    let tdJuz = null;
+    if (key !== prevKey) {
+      // عدد الأوراد المتتالية في نفس الجزء
+      let span = 1;
+      while (i + span < WIRDS.length &&
+        juzLabels(WIRDS[i + span].from, WIRDS[i + span].to).join("|") === key) {
+        span++;
+      }
+      tdJuz = document.createElement("td");
+      tdJuz.className = "c-juz";
+      tdJuz.rowSpan = span;
+    }
+
+    if (tdJuz) labels.forEach(line => {
       const span = document.createElement("span");
       span.className = "juz-line";
       // نعزل نطاق الصفحات حتى يظهر بالترتيب الصحيح 117–120
@@ -340,7 +359,8 @@ function renderTable() {
     }
     tdDone.appendChild(box);
 
-    tr.append(tdNum, tdPages, tdJuz, tdDate, tdDone);
+    if (tdJuz) tr.append(tdNum, tdPages, tdJuz, tdDate, tdDone);
+    else tr.append(tdNum, tdPages, tdDate, tdDone);
     frag.appendChild(tr);
     state.rows.set(w.num, { tr, tdDate, box });
   });
