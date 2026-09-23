@@ -24,7 +24,7 @@ import { firebaseConfig, EMAIL_DOMAIN, GIRLS } from "./firebase-config.js";
 // ------------------------------------------------------------
 
 // بدايات الأجزاء حسب مصحف المدينة
-const JUZ_STARTS = [1, 22, 42, 62, 82, 102, 121, 142, 162, 182,
+const JUZ_STARTS = [1, 22, 42, 62, 82, 102, 122, 142, 162, 182,
   202, 222, 242, 262, 282, 302, 322, 342, 362, 382,
   402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
 
@@ -91,11 +91,18 @@ function todayISO() {
   return `${y}-${m}-${day}`;
 }
 
-// عرض التاريخ بصيغة DD/MM/YYYY
-function formatDate(iso) {
-  if (!iso) return "";
+// عرض التاريخ: كامل DD/MM/YYYY للكمبيوتر، ومختصر D/M للجوال
+function setDateCell(td, iso) {
+  td.textContent = "";
+  if (!iso) return;
   const [y, m, d] = iso.split("-");
-  return `${d}/${m}/${y}`;
+  const full = document.createElement("span");
+  full.className = "d-full";
+  full.textContent = `${d}/${m}/${y}`;
+  const short = document.createElement("span");
+  short.className = "d-short";
+  short.textContent = `${Number(d)}/${Number(m)}`;
+  td.append(full, short);
 }
 
 function girlById(id) {
@@ -141,9 +148,8 @@ const state = {
   myGirl: null,        // الفتاة المسجلة دخولها
   currentGirl: null,   // الشيت المفتوح حاليًا
   unsubscribe: null,   // إلغاء الاستماع للشيت
-  data: { done: {}, notes: {} },
-  rows: new Map(),     // رقم الورد → عناصر الصف
-  noteTimers: new Map()
+  data: { done: {} },
+  rows: new Map()      // رقم الورد → عناصر الصف
 };
 
 // ------------------------------------------------------------
@@ -179,7 +185,6 @@ el.loginForm.addEventListener("submit", async (e) => {
 });
 
 el.logoutBtn.addEventListener("click", () => {
-  flushAllNotes();
   signOut(auth);
 });
 
@@ -244,11 +249,10 @@ function markActiveTab() {
 // فتح شيت فتاة
 // ------------------------------------------------------------
 function openSheet(girlId) {
-  flushAllNotes();
   stopListening();
 
   state.currentGirl = girlId;
-  state.data = { done: {}, notes: {} };
+  state.data = { done: {} };
   el.sheetOwner.textContent = `شيت ${girlById(girlId).name}`;
   el.saveStatus.textContent = "";
   markActiveTab();
@@ -258,7 +262,7 @@ function openSheet(girlId) {
   const ref = doc(db, "sheets", girlId);
   state.unsubscribe = onSnapshot(ref, (snap) => {
     const d = snap.exists() ? snap.data() : {};
-    state.data = { done: d.done || {}, notes: d.notes || {} };
+    state.data = { done: d.done || {} };
     fillData();
   }, () => {
     el.saveStatus.textContent = "تعذر تحميل البيانات";
@@ -336,27 +340,9 @@ function renderTable() {
     }
     tdDone.appendChild(box);
 
-    // ملاحظة
-    const tdNote = document.createElement("td");
-    tdNote.className = "c-note";
-    let noteEl;
-    if (editable) {
-      noteEl = document.createElement("input");
-      noteEl.type = "text";
-      noteEl.className = "note-input";
-      noteEl.maxLength = 300;
-      noteEl.setAttribute("aria-label", `ملاحظة الورد ${w.num}`);
-      noteEl.addEventListener("input", () => scheduleNoteSave(w.num, noteEl));
-      noteEl.addEventListener("blur", () => flushNote(w.num, noteEl));
-    } else {
-      noteEl = document.createElement("span");
-      noteEl.className = "note-text";
-    }
-    tdNote.appendChild(noteEl);
-
-    tr.append(tdNum, tdPages, tdJuz, tdDate, tdDone, tdNote);
+    tr.append(tdNum, tdPages, tdJuz, tdDate, tdDone);
     frag.appendChild(tr);
-    state.rows.set(w.num, { tr, tdDate, box, noteEl });
+    state.rows.set(w.num, { tr, tdDate, box });
   });
 
   el.gridBody.appendChild(frag);
@@ -364,25 +350,11 @@ function renderTable() {
 
 // تعبئة البيانات القادمة من قاعدة البيانات
 function fillData() {
-  const editable = canEdit();
   state.rows.forEach((row, num) => {
-    const key = String(num);
-    const date = state.data.done[key] || "";
-    const note = state.data.notes[key] || "";
-
+    const date = state.data.done[String(num)] || "";
     row.box.checked = Boolean(date);
-    row.tdDate.textContent = formatDate(date);
+    setDateCell(row.tdDate, date);
     row.tr.classList.toggle("is-done", Boolean(date));
-
-    if (editable) {
-      // لا نغيّر الملاحظة أثناء الكتابة فيها
-      if (document.activeElement !== row.noteEl && !state.noteTimers.has(num)) {
-        row.noteEl.value = note;
-      }
-    } else {
-      row.noteEl.textContent = note;
-      row.noteEl.title = note;
-    }
   });
 }
 
@@ -399,7 +371,7 @@ async function onToggleDone(num, checked) {
   // تحديث فوري للواجهة
   if (checked) state.data.done[key] = date;
   else delete state.data.done[key];
-  row.tdDate.textContent = formatDate(date);
+  setDateCell(row.tdDate, date);
   row.tr.classList.toggle("is-done", checked);
 
   const ref = doc(db, "sheets", state.myGirl);
@@ -412,56 +384,11 @@ async function onToggleDone(num, checked) {
     if (prev) state.data.done[key] = prev;
     else delete state.data.done[key];
     row.box.checked = Boolean(prev);
-    row.tdDate.textContent = formatDate(prev);
+    setDateCell(row.tdDate, prev);
     row.tr.classList.toggle("is-done", Boolean(prev));
     setStatus("تعذر الحفظ");
   }
 }
-
-// ------------------------------------------------------------
-// الملاحظات: حفظ تلقائي
-// ------------------------------------------------------------
-function scheduleNoteSave(num, input) {
-  clearTimeout(state.noteTimers.get(num));
-  state.noteTimers.set(num, setTimeout(() => flushNote(num, input), 700));
-}
-
-async function flushNote(num, input) {
-  if (!state.noteTimers.has(num)) return;
-  clearTimeout(state.noteTimers.get(num));
-  state.noteTimers.delete(num);
-  if (!state.myGirl) return;
-
-  const key = String(num);
-  const value = input.value.trim().slice(0, 300);
-  if ((state.data.notes[key] || "") === value) return;
-
-  if (value) state.data.notes[key] = value;
-  else delete state.data.notes[key];
-
-  const ref = doc(db, "sheets", state.myGirl);
-  setStatus("جاري الحفظ...");
-  try {
-    await setDoc(ref, { notes: { [key]: value ? value : deleteField() } }, { merge: true });
-    setStatus("تم الحفظ");
-  } catch (err) {
-    setStatus("تعذر حفظ الملاحظة");
-  }
-}
-
-function flushAllNotes() {
-  if (state.currentGirl !== state.myGirl) return;
-  Array.from(state.noteTimers.keys()).forEach(num => {
-    const row = state.rows.get(num);
-    if (row) flushNote(num, row.noteEl);
-  });
-}
-
-// حفظ الملاحظات المعلقة عند إغلاق الصفحة
-window.addEventListener("pagehide", flushAllNotes);
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") flushAllNotes();
-});
 
 // ------------------------------------------------------------
 // حالة الحفظ
