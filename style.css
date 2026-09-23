@@ -216,8 +216,15 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .grid td.c-num { color: var(--muted); }
 .grid td.c-pages { direction: ltr; }
 
-/* خلية الجزء (في حال انقسام ورد بين جزأين) */
+/* خلية الجزء المدموجة: بيضاء دائمًا */
 .grid td.c-juz { white-space: normal; line-height: 1.4; font-size: 14px; }
+.grid tbody tr td.c-juz,
+.grid tbody tr:nth-child(even) td.c-juz,
+.grid tbody tr.is-done td.c-juz { background: #fff; color: var(--header-text); }
+
+/* خط فاصل أغمق بين الأجزاء */
+.grid tbody tr.juz-end td,
+.grid tbody td.c-juz { border-bottom: 2px solid #9aa7bd; }
 .juz-line { display: block; }
 .range { direction: ltr; unicode-bidi: isolate; white-space: nowrap; display: inline-block; }
 
