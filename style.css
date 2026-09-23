@@ -1,10 +1,12 @@
-/* خط طفولي العربي: يُقرأ من ملفات مجلد fonts */
+/* خط طفولي العربي للحروف العربية فقط
+   (أرقام نسخة DEMO عليها علامة مائية، فتُكتب الأرقام بالخط الاحتياطي) */
 @font-face {
   font-family: "Tufuli Arabic";
   src: url("fonts/TufuliArabicDEMO-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0621-065F, U+066E-06EF, U+06FA-06FF, U+FB50-FDFF, U+FE70-FEFC;
 }
 
 @font-face {
@@ -13,6 +15,7 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0621-065F, U+066E-06EF, U+06FA-06FF, U+FB50-FDFF, U+FE70-FEFC;
 }
 
 :root {
@@ -42,9 +45,10 @@ html, body {
   color: var(--text);
   font-family: var(--font);
   font-size: 16px;
+  overflow-x: hidden;
 }
 
-button, input, select, textarea { font-family: inherit; font-size: inherit; }
+button, input, select { font-family: inherit; font-size: inherit; }
 
 [hidden] { display: none !important; }
 
@@ -153,18 +157,19 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   color: var(--text);
 }
 
-/* حاوية الجدول: تمرير عمودي وأفقي، والمسافة السفلية لشريط التبويبات */
+/* حاوية الجدول: تمرير عمودي فقط */
 .grid-wrap {
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(var(--tabs-height) + env(safe-area-inset-bottom));
 }
 
+/* الجدول بعرض الشاشة بالضبط */
 .grid {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 720px;
   width: 100%;
   table-layout: fixed;
   background: #fff;
@@ -174,11 +179,13 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .grid td {
   border-left: 1px solid var(--grid-line);
   border-bottom: 1px solid var(--grid-line);
-  padding: 0 10px;
-  height: 40px;
+  padding: 0 4px;
+  height: 42px;
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .grid th:first-child,
@@ -199,25 +206,24 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .grid tbody tr:nth-child(even) td { background: var(--row-alt); }
 .grid tbody tr.is-done td { background: var(--green-bg); }
 
-/* عرض الأعمدة */
-.c-num   { width: 80px; }
-.c-pages { width: 120px; }
-.c-juz   { width: 200px; }
-.c-date  { width: 120px; }
-.c-done  { width: 64px; }
-.c-note  { width: auto; min-width: 200px; }
+/* عرض الأعمدة (نِسَب من عرض الشاشة) */
+.c-num   { width: 14%; }
+.c-pages { width: 22%; }
+.c-juz   { width: 22%; }
+.c-date  { width: 28%; }
+.c-done  { width: 14%; }
 
 .grid td.c-num { color: var(--muted); }
 .grid td.c-pages { direction: ltr; }
 
-/* نطاق الصفحات يُعرض دائمًا من اليسار لليمين: 1–6 */
+/* خلية الجزء (في حال انقسام ورد بين جزأين) */
+.grid td.c-juz { white-space: normal; line-height: 1.4; font-size: 14px; }
+.juz-line { display: block; }
 .range { direction: ltr; unicode-bidi: isolate; white-space: nowrap; display: inline-block; }
 
-/* خلية الجزء عند انقسام الورد بين جزأين */
-.grid td.c-juz { white-space: normal; line-height: 1.5; padding: 4px 10px; font-size: 14px; }
-.juz-line { display: block; }
-
+/* التاريخ: كامل على الشاشات الواسعة ومختصر على الجوال */
 .grid td.c-date { direction: ltr; font-size: 14px; color: #333; }
+.d-short { display: none; }
 
 /* مربع «تم» */
 .done-box {
@@ -256,29 +262,6 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 .done-box:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* خانة الملاحظة */
-.grid td.c-note { padding: 0; text-align: right; }
-
-.note-input {
-  width: 100%;
-  height: 39px;
-  border: none;
-  background: transparent;
-  padding: 0 10px;
-  color: var(--text);
-  outline: none;
-}
-
-.note-input:focus { box-shadow: inset 0 0 0 2px var(--green); background: #fff; }
-
-.note-text {
-  display: block;
-  padding: 0 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #333;
-}
-
 /* ===== التبويبات أسفل الشاشة ===== */
 .tabs {
   position: fixed;
@@ -303,10 +286,9 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 .tab {
   flex-shrink: 0;
-  min-width: 72px;
+  min-width: 64px;
   height: 34px;
-  margin-top: 0;
-  padding: 0 16px;
+  padding: 0 14px;
   border: 1px solid #c6c6c6;
   border-top: none;
   background: var(--tab-bg);
@@ -334,12 +316,14 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   .topbar { padding: 6px 8px; gap: 8px; }
   .sheet-title { font-size: 16px; }
   .sheet-owner { display: none; }
-  .grid th, .grid td { height: 44px; padding: 0 6px; }
-  .note-input { height: 43px; }
-  .grid thead th { white-space: normal; line-height: 1.2; }
-  .c-num { width: 60px; }
-  .c-pages { width: 96px; }
-  .c-juz { width: 210px; }
-  .c-date { width: 104px; }
-  .c-done { width: 56px; }
+  .grid th, .grid td { height: 46px; padding: 0 2px; }
+  .c-num   { width: 15%; }
+  .c-pages { width: 25%; }
+  .c-juz   { width: 22%; }
+  .c-date  { width: 20%; }
+  .c-done  { width: 18%; }
+  .d-full { display: none; }
+  .d-short { display: inline; }
+  .tabs { padding-inline: 4px; }
+  .tab { min-width: 0; padding: 0 12px; }
 }
