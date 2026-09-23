@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ختمة القيام</title>
+  <meta name="description" content="جدول متابعة ختمة القيام">
+  <meta name="theme-color" content="#1f3a68">
+
+  <!-- أيقونة الموقع وصورة التطبيق من الخارج -->
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-title" content="ختمة القيام">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta property="og:title" content="ختمة القيام">
+  <meta property="og:image" content="icons/cover.jpg">
+
+  <!-- خط احتياطي مستدير يشبه طفولي في حال لم يُرفع ملف الخط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- شاشة تسجيل الدخول -->
+  <section id="loginView" class="login-view" hidden>
+    <form id="loginForm" class="login-box" autocomplete="on">
+      <h1 class="login-title">ختمة القيام</h1>
+
+      <label for="loginName">الاسم</label>
+      <select id="loginName" required></select>
+
+      <label for="loginPassword">كلمة المرور</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" required>
+
+      <button type="submit" id="loginBtn">دخول</button>
+      <p id="loginError" class="login-error" role="alert"></p>
+    </form>
+  </section>
+
+  <!-- شاشة الجدول -->
+  <section id="sheetView" class="sheet-view" hidden>
+    <header class="topbar">
+      <h1 class="sheet-title">ختمة القيام</h1>
+      <span id="sheetOwner" class="sheet-owner"></span>
+      <span id="saveStatus" class="save-status" aria-live="polite"></span>
+      <button type="button" id="logoutBtn" class="logout-btn">خروج</button>
+    </header>
+
+    <div id="gridWrap" class="grid-wrap">
+      <table class="grid" id="grid">
+        <thead>
+          <tr>
+            <th class="c-num">رقم الورد</th>
+            <th class="c-pages">صفحات الورد</th>
+            <th class="c-juz">الجزء</th>
+            <th class="c-date">التاريخ</th>
+            <th class="c-done">تم</th>
+            <th class="c-note">ملاحظة</th>
+          </tr>
+        </thead>
+        <tbody id="gridBody"></tbody>
+      </table>
+    </div>
+
+    <!-- تبويبات الفتيات أسفل الشاشة مثل Excel -->
+    <nav class="tabs" id="tabs" aria-label="أوراق الفتيات"></nav>
+  </section>
+
+  <p id="bootMsg" class="boot-msg">جاري التحميل...</p>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
